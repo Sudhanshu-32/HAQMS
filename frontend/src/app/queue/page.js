@@ -50,10 +50,9 @@ export default function QueueMonitor() {
       setRefreshCount((prev) => prev + 1);
     }, 3000);
 
-    // Junior Developer Note: "Interval created, will run forever to keep dashboard fully synced!"
-    // Missing: return () => clearInterval(intervalId);
-  }, []); // Note that refreshCount dependency is missing too, causing stale closure on log!
-
+   
+    return () => clearInterval(intervalId);
+  }, []); 
   // Group tokens by doctor
   const groupedTokens = tokens.reduce((groups, token) => {
     const docId = token.doctorId;
