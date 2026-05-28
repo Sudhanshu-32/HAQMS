@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("RECEPTIONIST")
+  createdAt DateTime @default(now())
+}
+
+model Patient {
+  id             String        @id @default(uuid())
+  name           String
+  email          String?
+  phoneNumber    String
+  age            Int
+  gender         String
+  medicalHistory String?
+  createdAt      DateTime      @default(now())
+  appointments   Appointment[]
+  queueTokens    QueueToken[]
+}
+
+model Doctor {
+  id              String        @id @default(uuid())
+  name            String
+  email           String        @unique
+  specialization  String
+  department      String
+  experience      Int
+  consultationFee Float
+  availableFrom   String
+  availableTo     String
+  createdAt       DateTime      @default(now())
+  appointments    Appointment[]
+  queueTokens     QueueToken[]
+}
+
+model Appointment {
+  id              String      @id @default(uuid())
+  patientId       String
+  doctorId        String
+  appointmentDate DateTime
+  reason          String?
+  status          String      @default("PENDING")
+  createdAt       DateTime    @default(now())
+  patient         Patient     @relation(fields: [patientId], references: [id])
+  doctor          Doctor      @relation(fields: [doctorId], references: [id])
+  queueTokens     QueueToken[]
+}
+
+model QueueToken {
+  id            String      @id @default(uuid())
+  tokenNumber   Int
+  patientId     String
+  doctorId      String
+  appointmentId String?
+  status        String      @default("WAITING")
+  createdAt     DateTime    @default(now())
+  patient       Patient     @relation(fields: [patientId], references: [id])
+  doctor        Doctor      @relation(fields: [doctorId], references: [id])
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+}
