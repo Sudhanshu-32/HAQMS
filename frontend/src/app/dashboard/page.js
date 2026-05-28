@@ -1,9 +1,9 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/common/Navbar';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
   Users, CalendarDays, Activity, Search, Sparkles, UserPlus, 
   Trash2, ClipboardList, TrendingUp, DollarSign, Award, Clock,
@@ -11,31 +11,16 @@ import {
 } from 'lucide-react';
 
 export default function Dashboard() {
-  const { user, token, API_BASE_URL, logout } = useAuth();
+  const { user, token, API_BASE_URL, logout, loading } = useAuth();
   const router = useRouter();
 
-  // Navigation Guard
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-    }
-  }, [user]);
-
-  if (!user) return null;
-
-  // Global State
-  const [activeTab, setActiveTab] = useState(user.role === 'ADMIN' ? 'reports' : user.role === 'RECEPTIONIST' ? 'patients' : 'appointments');
-
-  // ==========================================
-  // STATE FOR RECEPTIONIST WORKFLOWS
-  // ==========================================
+  // ALL useState hooks must be before any early returns!
+  const [activeTab, setActiveTab] = useState(null);
   const [patients, setPatients] = useState([]);
   const [patientsLoading, setPatientsLoading] = useState(false);
   const [patientSearch, setPatientSearch] = useState('');
   const [patientGender, setPatientGender] = useState('All');
   const [patientsPagination, setPatientsPagination] = useState({ page: 1, totalPages: 1 });
-  
-  // Registration Form
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
@@ -43,8 +28,6 @@ export default function Dashboard() {
   const [regGender, setRegGender] = useState('Male');
   const [regHistory, setRegHistory] = useState('');
   const [regMessage, setRegMessage] = useState('');
-
-  // Queue and Appointment Booking
   const [doctorsList, setDoctorsList] = useState([]);
   const [bookingPatientId, setBookingPatientId] = useState('');
   const [bookingDoctorId, setBookingDoctorId] = useState('');
@@ -52,20 +35,28 @@ export default function Dashboard() {
   const [bookingReason, setBookingReason] = useState('');
   const [bookingMessage, setBookingMessage] = useState('');
   const [checkinMessage, setCheckinMessage] = useState('');
-
-  // ==========================================
-  // STATE FOR DOCTOR WORKFLOWS
-  // ==========================================
   const [doctorAppointments, setDoctorAppointments] = useState([]);
   const [doctorQueue, setDoctorQueue] = useState([]);
   const [selectedPatientHistory, setSelectedPatientHistory] = useState(null);
-
-  // ==========================================
-  // STATE FOR ADMIN WORKFLOWS
-  // ==========================================
   const [adminReportData, setAdminReportData] = useState(null);
   const [adminReportLoading, setAdminReportLoading] = useState(false);
   const [adminSearchQuery, setAdminSearchQuery] = useState('');
+
+  // Navigation Guard
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+    } else {
+      setActiveTab(
+        user.role === 'ADMIN' ? 'reports' : 
+        user.role === 'RECEPTIONIST' ? 'patients' : 
+        'appointments'
+      );
+    }
+  }, [user]);
+
+  // Early return AFTER all hooks
+  if (loading || !user) return null;
 
   // ==========================================
   // RECEPTIONIST FUNCTIONS
